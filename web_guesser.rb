@@ -2,10 +2,11 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'pry'
 
-SECRET_NUMBER = rand(100)
+@@SECRET_NUMBER = rand(100)
+@@count = 5
 
 def secret_number
-  SECRET_NUMBER
+  @@SECRET_NUMBER
 end
 
 def check_guess(guess)
@@ -33,23 +34,31 @@ def check_guess(guess)
   end
 end
 
-# def color_changer
-#   if @@message == "Guess!"
-#     "background-color:#FFFFFF"
-#   elsif @@message == "Wayyyy Too high!" || "Wayyyy Too low!"
-#     "background-color:#FF3300"
-#   elsif @@message == "Too High!" || "Too Low!"
-#     "background-color:#FF6600"
-#   elsif @@message == "Got it! -- The Secret Number is #{secret_number}"
-#     "background-color:#00FF00"
-#   end
-# end
+def guesses(guess)
+  if guess.nil?
+    ""
+  elsif @@count > 1 && guess.to_i != secret_number
+    @@count -= 1
+    "You have #{@@count} tries left"
+  elsif @@count > 0 && guess.to_i == secret_number
+    @@count = 5
+    @@SECRET_NUMBER = rand(100)
+    "You guessed correctly :D\nA new number has been generated."
+  elsif @@count == 1 && guess.to_i != secret_number
+    @@count = 5
+    @@SECRET_NUMBER = rand(100)
+    "Too many tries :(\nA new number has been generated"
+  end
+end
+
 
 get '/' do
   guess = params["guess"]
   @@message = check_guess(guess)
-  erb :index, :locals => {:number => SECRET_NUMBER,
+  @@counter = guesses(guess)
+  erb :index, :locals => {:number => @@SECRET_NUMBER,
                           :message => @@message,
-                          :color => @color
+                          :color => @color,
+                          :counter => @@counter
                         }
 end
